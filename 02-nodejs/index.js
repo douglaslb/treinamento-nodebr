@@ -34,41 +34,70 @@ function ObterEndereco(idUsuario) {
 }
 
 
-const usuarioPromise = ObterUsuario();
+main();
+async function main() {
+    try {
+        console.time('medida-promise');
+        const usuario = await ObterUsuario();
+        // const telefone = await ObterTelefone(usuario.id);
+        // const endereco = await ObterEndereco(usuario.id);
+        const resultado = await Promise.all([
+            ObterTelefone(usuario.id),
+            ObterEndereco(usuario.id)
+        ])
+        const endereco = resultado[1]
+        const telefone = resultado[0]
 
-usuarioPromise
-    .then((usuario) => {
-        return ObterTelefone(usuario.id)
-            .then((result) => {
-                return {
-                    usuario: {
-                        nome: usuario.nome,
-                        id: usuario.id
-                    },
-                    telefone: result
-                }
-            })
-    })
-    .then((resultado) => {
-        return ObterEndereco(resultado.usuario.id)
-            .then((result) => {
-                return {
-                    usuario: resultado.usuario,
-                    telefone: resultado.telefone,
-                    endereco: result
-                }
-            })
-    })
-    .then((resultado) => {
-        console.table(`
-            Nome: ${resultado.usuario.nome},
-            Endereco: ${resultado.endereco.rua}, ${resultado.endereco.numero},
-            Telefone: (${resultado.telefone.ddd}) ${resultado.telefone.telefone}
+        console.log(`
+            Nome: ${usuario.nome},
+            Telefone: (${telefone.ddd}) ${telefone.telefone},
+            Endereco: ${endereco.rua}, ${endereco.numero}
         `)
-    })
-    .catch((erro) => {
-        console.error('DEU RUIM', erro)
-    })
+        console.timeEnd('medida-promise')
+
+    }
+    catch(error) {
+        console.log('DEU RUIM', error)
+    }
+}
+
+
+
+// const usuarioPromise = ObterUsuario();
+
+// usuarioPromise
+//     .then((usuario) => {
+//         return ObterTelefone(usuario.id)
+//             .then((result) => {
+//                 return {
+//                     usuario: {
+//                         nome: usuario.nome,
+//                         id: usuario.id
+//                     },
+//                     telefone: result
+//                 }
+//             })
+//     })
+//     .then((resultado) => {
+//         return ObterEndereco(resultado.usuario.id)
+//             .then((result) => {
+//                 return {
+//                     usuario: resultado.usuario,
+//                     telefone: resultado.telefone,
+//                     endereco: result
+//                 }
+//             })
+//     })
+//     .then((resultado) => {
+//         console.table(`
+//             Nome: ${resultado.usuario.nome},
+//             Endereco: ${resultado.endereco.rua}, ${resultado.endereco.numero},
+//             Telefone: (${resultado.telefone.ddd}) ${resultado.telefone.telefone}
+//         `)
+//     })
+//     .catch((erro) => {
+//         console.error('DEU RUIM', erro)
+//     })
 
 // ObterUsuario((error, usuario) => {
 //     if (error) {
