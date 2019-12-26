@@ -2,9 +2,9 @@ const { deepEqual, ok } = require('assert')
 
 const database = require('./database') 
 const DEFAULT_ITEM_CADASTRAR = {
-    nome: 'Hulk',
-    poder: 'Força',
-    id: 4
+    nome: 'Flash',
+    poder: 'Speed',
+    id: 1
 }
 
 describe('Suite de manipulação de Heróis', () => {
@@ -23,5 +23,11 @@ describe('Suite de manipulação de Heróis', () => {
         const [actual] = await database.listar(DEFAULT_ITEM_CADASTRAR.id)
         deepEqual(actual, expected)
 
+    })
+
+    it('deve remover um heroi por id', async () => {
+        const expected = true
+        const resultado = await database.remover(DEFAULT_ITEM_CADASTRAR.id)
+        deepEqual(resultado, expected)
     })
 })
