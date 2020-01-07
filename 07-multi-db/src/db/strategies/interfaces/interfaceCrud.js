@@ -9,7 +9,7 @@ class ICrud {
         throw new NotImplementedException()
     }
 
-    read(query) {
+    read(item) {
         throw new NotImplementedException()
     }
 
