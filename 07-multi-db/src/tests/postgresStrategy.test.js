@@ -50,7 +50,7 @@ describe('Postgres Strategy', function () {
         assert.deepEqual(itemAtualizado.nome, novoItem.nome)
     })
 
-    it.only('Remover por ID', async () => {
+    it('Remover por ID', async () => {
         const [item] = await context.read({})
         const result = await context.delete(item.id)
         assert.deepEqual(result, 1)
