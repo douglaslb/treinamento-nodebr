@@ -7,12 +7,18 @@ const MOCK_HEROI_CADASTRAR = {
     nome: 'Gavião Negro',
     poder: 'Flechas'
 }
+const MOCK_HEROI_ATUALIZAR = {
+    nome: 'Batman',
+    poder: 'Dinheiro'
+}
 
 describe('Postgres Strategy', function () {
     this.timeout(Infinity)
     this.beforeAll(async function () {
         await context.connect()
+        await context.create(MOCK_HEROI_ATUALIZAR)
     })
+
     it('PostgresSQL Connection', async () => {
         const result = await context.isConnected()
         assert.deepEqual(result, true)
@@ -28,5 +34,17 @@ describe('Postgres Strategy', function () {
         const [result] = await context.read({nome} = MOCK_HEROI_CADASTRAR)
         delete result.id
         assert.deepEqual(result, MOCK_HEROI_CADASTRAR)
+    })
+
+    it('Atualizar', async () => {
+        const [itemAtualizar] = await context.read({nome} = MOCK_HEROI_ATUALIZAR)
+        const novoItem = {
+            ...MOCK_HEROI_ATUALIZAR,
+            nome: 'Mulher Maravilha'
+        }
+        const [result] = await context.update(itemAtualizar.id, novoItem)
+        const [itemAtualizado] = await context.read({id: itemAtualizar.id})
+        assert.deepEqual(result, 1)
+        assert.deepEqual(itemAtualizado.nome, novoItem.nome)
     })
 })
