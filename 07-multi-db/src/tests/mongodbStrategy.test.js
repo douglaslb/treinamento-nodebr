@@ -14,10 +14,20 @@ const MOCK_HEROI_DEFAULT = {
     poder: 'Super teia'
 }
 
+const MOCK_HEROI_ATUALIZAR = {
+    nome: `Wolverine-${Date.now()}`,
+    poder: 'Garras de Adamantium'
+}
+
+let MOCK_HEROI_ID = ''
+
+
 describe('MongoDB Suite de testes', function () {
     this.beforeAll(async () => {
         await context.connect()
         await context.create(MOCK_HEROI_DEFAULT)
+        const result = await context.create(MOCK_HEROI_ATUALIZAR)
+        MOCK_HEROI_ID = result._id
     })
     it('Verificar conexão', async () => {
         const result = await context.isConnected()
@@ -28,17 +38,24 @@ describe('MongoDB Suite de testes', function () {
     })
 
     it('Cadastrar', async () => {
-            const { nome, poder } = await context.create(MOCK_HEROI_CADASTRAR)
-            assert.deepEqual({ nome, poder }, MOCK_HEROI_CADASTRAR)
+        const { nome, poder } = await context.create(MOCK_HEROI_CADASTRAR)
+        assert.deepEqual({ nome, poder }, MOCK_HEROI_CADASTRAR)
     })
 
 
-    it.only('Listar', async () => {
+    it('Listar', async () => {
         const [{ nome, poder }] = await context.read({ nome: MOCK_HEROI_DEFAULT.nome })
         const result = {
-             nome, 
-             poder
-         } 
+            nome,
+            poder
+        }
         assert.deepEqual(result, MOCK_HEROI_DEFAULT)
+    })
+
+    it('Atualizar', async () => {
+        const result = await context.update(MOCK_HEROI_ID, {
+            nome: 'Pernalonga'
+        });
+        assert.deepEqual(result.nModified, 1)
     })
 })

@@ -26,7 +26,7 @@ class MongoDB extends iCrud {
     }
 
     defineModel() {
-       const heroisSchema = new Mongoose.Schema({
+        const heroisSchema = new Mongoose.Schema({
             nome: {
                 type: String,
                 required: true
@@ -64,12 +64,14 @@ class MongoDB extends iCrud {
         return this._herois.create(item)
     }
 
-    read(item, skip=0, limit=10) {
+    read(item, skip = 0, limit = 10) {
         return this._herois.find(item).skip(skip).limit(limit)
         // return this._herois.count()
     }
 
-    
+    update(id, item) {
+        return this._herois.updateOne({ _id: id }, { $set: item });
+    }
 }
 
 module.exports = MongoDB
