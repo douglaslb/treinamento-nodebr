@@ -1,27 +1,33 @@
 // npm i hapi
 // npm i vision inert hapi-swagger
+// npm i hapi-auth-jwt2
 
 const Hapi = require('hapi')
 const Context = require('./db/strategies/base/contextStrategy')
 const MongoDb = require('./db/strategies/mongodb/mongodb')
 const HeroiSchema = require('./db/strategies/mongodb/schemas/heroisSchema')
 const HeroRoute = require('./routes/heroRoutes')
+const AuthRoute = require('./routes/authRoutes')
 const HapiSwagger = require('hapi-swagger')
 const Vision = require('vision')
 const Inert = require('inert')
+
+const HapiJwt = require('hapi-auth-jwt2')
+const JWT_SECRET = 'MEU_SEGREDÃO_123'
+
 
 const app = new Hapi.Server({
     port: 4000
 })
 
 function mapRoutes(instance, methods) {
-     return methods.map(method => instance[method]())
+    return methods.map(method => instance[method]())
 }
 
 async function main() {
     const connection = MongoDb.connect()
     const context = new Context(new MongoDb(connection, HeroiSchema))
-    
+
     const swaggerOptions = {
         info: {
             title: 'API Herois  - #CursoNodeBR',
@@ -29,7 +35,8 @@ async function main() {
         }
     }
     await app.register([
-        Vision, 
+        HapiJwt,
+        Vision,
         Inert,
         {
             plugin: HapiSwagger,
@@ -37,14 +44,30 @@ async function main() {
         }
     ])
 
-    app.route(
-        mapRoutes(new HeroRoute(context), HeroRoute.methods())
-    )
+    app.auth.strategy('jwt', 'jwt', {
+        key: JWT_SECRET,
+        // options: {
+        //     expiresIn: 20
+        // },
+        validate: (dado, request) => {
+            //verifica no banco se o usuario continua ativo
+            //verifica no banco se o usuario continua pagando
+            return {
+                isValid: true // caso no valido false
+            }
+        }
+    })
+    app.auth.default('jwt')
+    
+    app.route([
+        ...mapRoutes(new HeroRoute(context), HeroRoute.methods()),
+        ...mapRoutes(new AuthRoute(JWT_SECRET), AuthRoute.methods())
+    ])
 
     await app.start()
     console.log('Servidor rodando na porta', app.info.port)
 
-    return app 
+    return app
 }
 
 
