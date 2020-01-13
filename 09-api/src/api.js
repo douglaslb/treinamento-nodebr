@@ -2,6 +2,8 @@
 // npm i vision inert hapi-swagger
 // npm i hapi-auth-jwt2
 
+// npm i bcrypt
+
 const Hapi = require('hapi')
 const Context = require('./db/strategies/base/contextStrategy')
 const MongoDb = require('./db/strategies/mongodb/mongodb')
@@ -11,6 +13,9 @@ const AuthRoute = require('./routes/authRoutes')
 const HapiSwagger = require('hapi-swagger')
 const Vision = require('vision')
 const Inert = require('inert')
+
+const Postgres = require('./db/strategies/postgres/postgres')
+const UserSchema = require('./db/strategies/postgres/schemas/usuarioSchema')
 
 const HapiJwt = require('hapi-auth-jwt2')
 const JWT_SECRET = 'MEU_SEGREDÃO_123'
@@ -27,6 +32,10 @@ function mapRoutes(instance, methods) {
 async function main() {
     const connection = MongoDb.connect()
     const context = new Context(new MongoDb(connection, HeroiSchema))
+
+    const connectionPostgres = await Postgres.connect()
+    const model = await Postgres.defineModel(connectionPostgres, UserSchema)
+    const contextPostgres = new Context(new Postgres(connectionPostgres, model))
 
     const swaggerOptions = {
         info: {
@@ -49,7 +58,17 @@ async function main() {
         // options: {
         //     expiresIn: 20
         // },
-        validate: (dado, request) => {
+        validate: async (dado, request) => {
+            const [result] = await contextPostgres.read({
+                username: dado.username.toLowerCase(),
+                id: dado.id
+            })
+
+            if(!result) {
+                return {
+                    isValid: false
+                }
+            }
             //verifica no banco se o usuario continua ativo
             //verifica no banco se o usuario continua pagando
             return {
@@ -61,7 +80,7 @@ async function main() {
     
     app.route([
         ...mapRoutes(new HeroRoute(context), HeroRoute.methods()),
-        ...mapRoutes(new AuthRoute(JWT_SECRET), AuthRoute.methods())
+        ...mapRoutes(new AuthRoute(JWT_SECRET, contextPostgres), AuthRoute.methods())
     ])
 
     await app.start()
