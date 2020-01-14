@@ -1,11 +1,15 @@
 {
-  "name": "07-multi-db",
+  "name": "09-api",
   "version": "1.0.0",
+  "engines": {
+    "node": "12.14.1"
+  },
   "description": "docker run \\     --name postgres \\     -e POSTGRES_USER=douglaslb \\     -e POSTGRES_PASSWORD=my_secret_pw \\     -e POSTGRES_DB=heroes \\     -p 5432:5432 \\     -d \\     postgres",
   "main": "index.js",
   "scripts": {
-    "test": "mocha src/tests/*.js",
-    "test:prod": "cross-env NODE_ENV=prod npm t"
+    "postinstall": "cross-env NODE_ENV=prod npm t",
+    "test": "nyc --reporter=html mocha  src/tests/*.js",
+    "prod": "cross-env NODE_ENV=prod pm2-runtime src/api.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +17,7 @@
   "dependencies": {
     "bcrypt": "^3.0.7",
     "boom": "^7.3.0",
+    "cross-env": "^6.0.3",
     "dotenv": "^8.2.0",
     "hapi": "^18.1.0",
     "hapi-auth-jwt2": "^8.8.1",
@@ -23,10 +28,12 @@
     "mongoose": "^5.8.5",
     "pg": "^7.17.0",
     "pg-hstore": "^2.3.3",
+    "pm2": "^4.2.1",
     "sequelize": "^5.21.3",
     "vision": "^5.4.4"
   },
   "devDependencies": {
-    "mocha": "^7.0.0"
+    "mocha": "^7.0.0",
+    "nyc": "^15.0.0"
   }
 }
